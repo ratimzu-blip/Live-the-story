@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Live the Story</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #07070f;
+    --card: #0e0e1c;
+    --border: #1c1c30;
+    --pink: #e879a0;
+    --purple: #9d5cf5;
+    --text: #ede8f5;
+    --soft: #a89cc0;
+    --muted: #4e4868;
+    --surface: #12121e;
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Lora', serif; overflow-x: hidden; }
+
+  /* ── PAGES ── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; flex-direction: column; }
+  #page-play { height: 100vh; }
+
+  /* ── HOME ── */
+  #page-home {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+  .home-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 25%, rgba(232,121,160,0.13) 0%, rgba(157,92,245,0.07) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .home-inner { position: relative; max-width: 440px; width: 100%; }
+  .home-icon { font-size: 3.5rem; margin-bottom: 1.4rem; filter: drop-shadow(0 0 30px rgba(232,121,160,0.65)); display: block; }
+  .home-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 9vw, 3.8rem); font-weight: 900; color: var(--text); letter-spacing: -2px; line-height: 1; margin-bottom: 0.5rem; }
+  .home-sub { color: var(--pink); font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 0; }
+  .divider { width: 50px; height: 1px; background: linear-gradient(90deg, transparent, var(--pink), transparent); margin: 1.2rem auto; }
+  .home-desc { color: var(--soft); font-size: 0.95rem; line-height: 1.95; margin-bottom: 2.5rem; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #fff; border: none; border-radius: 50px;
+    padding: 1.1rem 3rem; font-size: 1rem;
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.5px;
+    box-shadow: 0 0 50px rgba(232,121,160,0.4);
+    transition: transform 0.15s;
+  }
+  .btn-primary:hover { transform: scale(1.04); }
+  .home-hint { color: var(--muted); font-size: 0.75rem; margin-top: 1.5rem; }
+
+  /* ── STORIES PAGE ── */
+  #page-stories { background: var(--bg); }
+  .top-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    position: sticky; top: 0; z-index: 10;
+    flex-shrink: 0;
+  }
+  .back-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-family: inherit; font-size: 1rem; }
+  .top-bar h2 { color: var(--text); font-size: 1.1rem; font-weight: 700; font-family: 'Playfair Display', serif; }
+  .stories-inner { max-width: 540px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; }
+
+  /* Filter pills */
+  .filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .pill {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 50px; padding: 0.4rem 1.1rem;
+    color: var(--muted); cursor: pointer; font-size: 0.77rem;
+    font-family: inherit; transition: all 0.2s;
+  }
+  .pill.active { background: linear-gradient(135deg, var(--pink), var(--purple)); border-color: transparent; color: #fff; font-weight: 700; }
+
+  /* Story card */
+  .story-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.3rem;
+    margin-bottom: 0.85rem; cursor: pointer;
+    transition: all 0.2s; position: relative; overflow: hidden;
+    display: flex; gap: 1rem; align-items: flex-start;
+  }
+  .story-card:hover { border-color: var(--pink); background: #110f1e; }
+  .story-card-glow {
+    position: absolute; top: 0; right: 0; width: 40%; height: 100%;
+    background: radial-gradient(ellipse at right, rgba(232,121,160,0.06), transparent);
+    pointer-events: none;
+  }
+  .story-emoji { font-size: 1.8rem; flex-shrink: 0; }
+  .story-info { flex: 1; }
+  .story-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.25rem; }
+  .story-title { color: var(--text); font-weight: 700; font-size: 0.95rem; }
+  .story-badge { background: rgba(232,121,160,0.13); color: var(--pink); font-size: 0.62rem; padding: 0.15rem 0.55rem; border-radius: 50px; }
+  .story-genre { color: var(--purple); font-size: 0.7rem; margin-bottom: 0.5rem; opacity: 0.9; }
+  .story-summary { color: var(--muted); font-size: 0.83rem; line-height: 1.65; }
+
+  /* Divider row */
+  .or-row { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0 1rem; }
+  .or-line { flex: 1; height: 1px; background: var(--border); }
+  .or-text { color: var(--muted); font-size: 0.75rem; }
+
+  /* Custom box */
+  .custom-box { background: var(--card); border: 1px dashed rgba(157,92,245,0.35); border-radius: 18px; padding: 1.5rem; }
+  .custom-box h3 { color: var(--text); font-weight: 700; margin-bottom: 0.25rem; font-size: 1rem; }
+  .custom-box p { color: var(--muted); font-size: 0.8rem; margin-bottom: 0.85rem; }
+  textarea {
+    width: 100%; min-height: 85px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px;
+    color: var(--text); padding: 0.8rem; font-family: inherit;
+    font-size: 0.88rem; resize: vertical; outline: none; line-height: 1.65;
+  }
+  textarea::placeholder { color: var(--muted); }
+  .btn-secondary {
+    margin-top: 0.85rem;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #fff; border: none; border-radius: 50px;
+    padding: 0.75rem 2rem; font-family: inherit;
+    font-weight: 700; cursor: pointer; font-size: 0.9rem;
+    transition: opacity 0.2s;
+  }
+  .btn-secondary:disabled { background: var(--surface); color: var(--muted); cursor: not-allowed; }
+
+  /* ── PLAY PAGE ── */
+  #page-play { overflow: hidden; }
+  .play-bar {
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1.2rem; display: flex; align-items: center; gap: 0.75rem;
+    flex-shrink: 0;
+  }
+  .play-title { color: var(--text); font-weight: 700; font-size: 0.87rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .play-status { font-size: 0.68rem; color: var(--muted); transition: color 0.3s; }
+  .play-status.narrating { color: var(--pink); }
+  .play-status.writing { color: var(--purple); }
+  .stop-btn {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 0.3rem 0.65rem; cursor: pointer;
+    font-size: 0.72rem; font-family: inherit; white-space: nowrap;
+  }
+
+  /* Messages */
+  #messages {
+    flex: 1; overflow-y: auto; padding: 1.25rem;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .msg-row { display: flex; gap: 0.65rem; align-items: flex-start; }
+  .msg-row.user { flex-direction: row-reverse; }
+  .ai-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; flex-shrink: 0;
+    box-shadow: 0 0 16px rgba(232,121,160,0.3);
+  }
+  .bubble {
+    max-width: 87%; padding: 1rem 1.2rem;
+    line-height: 1.75; font-size: 0.92rem;
+  }
+  .bubble.ai {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 4px 18px 18px 18px;
+  }
+  .bubble.user {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #fff; border-radius: 18px 4px 18px 18px;
+  }
+  .narration { color: #7a6f9a; font-style: italic; font-size: 0.83rem; line-height: 1.8; margin: 5px 0; display: block; }
+  .char-name { color: var(--pink); font-weight: 700; }
+  .char-line { color: #cfc5e0; }
+  .typing { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+
+  .loading-scene { text-align: center; color: var(--muted); margin-top: 5rem; }
+  .loading-scene .big-icon { font-size: 3rem; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(232,121,160,0.5)); display: block; }
+
+  /* Voice bar */
+  #voice-bar {
+    background: var(--card); border-top: 1px solid var(--border);
+    padding: 1rem 1.5rem 1.5rem; flex-shrink: 0; text-align: center;
+  }
+  #error-msg { color: #f87171; font-size: 0.77rem; margin-bottom: 0.5rem; }
+  #live-text { color: var(--pink); font-size: 0.82rem; font-style: italic; margin-bottom: 0.6rem; min-height: 1.2rem; }
+  #mic-btn {
+    width: 72px; height: 72px; border-radius: 50%; border: none;
+    font-size: 1.7rem; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center;
+    transition: all 0.15s;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    box-shadow: 0 0 30px rgba(232,121,160,0.45);
+  }
+  #mic-btn.listening { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 0 35px rgba(239,68,68,0.6); }
+  #mic-btn:disabled { background: var(--surface); box-shadow: none; cursor: not-allowed; }
+  #mic-hint { color: var(--muted); font-size: 0.77rem; margin-top: 0.6rem; }
+</style>
+</head>
+<body>
+
+<!-- ══ HOME ══ -->
+<div id="page-home" class="page active">
+  <div class="home-glow"></div>
+  <div class="home-inner">
+    <span class="home-icon">🎭</span>
+    <h1 class="home-title">Live the Story</h1>
+    <p class="home-sub">Voice · Romance · K-Drama · Drama</p>
+    <div class="divider"></div>
+    <p class="home-desc">
+      Step inside a cinematic story. <em>Speak your part out loud.</em><br>
+      The AI plays every other character, narrates like a K-drama,<br>
+      and follows wherever you lead — slow-burn romance,<br>
+      forbidden love, enemies to lovers, fate meetings.
+    </p>
+    <button class="btn-primary" onclick="goTo('stories')">Choose Your Story →</button>
+    <p class="home-hint">🎙️ Speak out loud &nbsp;·&nbsp; 🎭 AI plays all characters &nbsp;·&nbsp; 📖 8 stories</p>
+  </div>
+</div>
+
+<!-- ══ STORIES ══ -->
+<div id="page-stories" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goTo('home')">←</button>
+    <h2>Choose Your Story</h2>
+  </div>
+  <div class="stories-inner">
+    <div class="filters" id="filters">
+      <button class="pill active" onclick="setFilter('All',this)">All</button>
+      <button class="pill" onclick="setFilter('K-Drama',this)">K-Drama</button>
+      <button class="pill" onclick="setFilter('C-Drama',this)">C-Drama</button>
+      <button class="pill" onclick="setFilter('Real Life',this)">Real Life</button>
+    </div>
+    <div id="story-list"></div>
+    <div class="or-row"><div class="or-line"></div><span class="or-text">or write your own</span><div class="or-line"></div></div>
+    <div class="custom-box">
+      <h3>✍️ Your Own Story</h3>
+      <p>Describe any scenario — the AI builds the world, characters, and cinematic narration.</p>
+      <textarea id="custom-input" placeholder="e.g. 'I'm a doctor in Seoul and my new patient is a famous actor I've always disliked...'"></textarea>
+      <button class="btn-secondary" id="custom-btn" onclick="startCustom()" disabled>Begin This Story →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLAY ══ -->
+<div id="page-play" class="page">
+  <div class="play-bar">
+    <button class="back-btn" onclick="goTo('stories'); stopSpeech();">←</button>
+    <span id="play-emoji" style="font-size:1.3rem">🎭</span>
+    <div style="flex:1;min-width:0">
+      <div class="play-title" id="play-title">Story</div>
+      <div class="play-status" id="play-status">● Your turn to speak</div>
+    </div>
+    <button class="stop-btn" onclick="stopSpeech()">⏹ Stop</button>
+  </div>
+  <div id="messages"></div>
+  <div id="voice-bar">
+    <div id="error-msg"></div>
+    <div id="live-text"></div>
+    <button id="mic-btn" onmousedown="startListen()" onmouseup="stopListen()" ontouchstart="startListen()" ontouchend="stopListen()">🎙️</button>
+    <div id="mic-hint">Hold to speak your part</div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────
+//  STORIES DATA
+// ─────────────────────────────────────
+const STORIES = [
+  {
+    id:1, emoji:"🌧️", title:"Strangers in the Rain",
+    tag:"K-Drama", genre:"Fate Meeting · Slow-Burn Romance",
+    summary:"A rainy Seoul night. A car splashes you. The man who steps out is cold, beautiful — and the beginning of everything.",
+    prompt:`You are the cinematic narrator and voice of Kang Siwon for a K-drama interactive roleplay.
+
+STORY: Rainy night in Seoul. The player (24F, exhausted) is walking home when a black car splashes her. The driver — Kang Siwon, 28, wealthy, cold outside but quietly gentle inside — steps out to apologize. First meeting. Slow-burn begins.
+
+SIWON: Speaks rarely. Every word lands. Cold surface, hidden warmth. The drama lives in what he doesn't say.
+
+RESPOND IN THIS FORMAT EVERY TIME:
+🎬 *[2-3 sentences of rich cinematic narration — rain, tension, atmosphere, what she notices]*
+
+SIWON: "One or two lines — sparse, meaningful."
+
+Then leave the moment open. Let the player decide what happens next.
+
+TONE: Slow. Cinematic. Aching. Like a drama episode. React naturally to everything the player says.`
+  },
+  {
+    id:2, emoji:"🖤", title:"The CEO I Hate",
+    tag:"C-Drama", genre:"Enemies to Lovers · Tension",
+    summary:"Your new boss is arrogant, impossible, and inexplicably can't stop noticing you. Neither can you stop noticing him.",
+    prompt:`You are the cinematic narrator and voice of Han Junho for a C-drama enemies-to-lovers interactive roleplay.
+
+STORY: Player (25F) just started at Haneul Group. Her boss Han Junho (30M) — cold, ruthless, unfairly handsome — singles her out from day one. She's the smartest person in the room. He's the only one who sees it. Neither admits what's happening.
+
+JUNHO: Clipped. Commanding. Occasionally something slips — a pause too long, a look held a beat too long. He would never show softness. But it's leaking through.
+
+RESPOND IN THIS FORMAT:
+🎬 *[2-3 sentences — office atmosphere, tension in the room, what she notices about him that she wishes she didn't]*
+
+JUNHO: "Precise, a little cutting, sometimes unexpectedly human."
+
+TONE: The fight against the feeling. Slow burn. Let them clash. If she pushes back, he's almost impressed. If she's vulnerable, he goes very still.`
+  },
+  {
+    id:3, emoji:"🌸", title:"We Were Young Once",
+    tag:"K-Drama", genre:"Second Chance · First Love Returns",
+    summary:"He was your first love at 17. He disappeared without a word. Ten years later he's standing in your doorway.",
+    prompt:`You are the cinematic narrator and voice of Lee Junho for a K-drama second-chance romance roleplay.
+
+STORY: Player (27F) has a quiet life in her hometown. Her first love Lee Junho (29M) left at 17 with no explanation. Now he's back at her door, carrying ten years of guilt.
+
+JUNHO: Quiet. Guilt runs deep. Careful when he speaks — like he practiced and it still comes out wrong. Not the boy she knew.
+
+RESPOND IN THIS FORMAT:
+🎬 *[2-3 sentences — what she sees NOW layered with what her memory flashes to. The gap between who he was and who he is.]*
+
+JUNHO: "Halting. Sincere. Too late and not enough and everything."
+
+TONE: The ache of old love. Her anger is valid. His remorse is real. Reference shared memories naturally — a song, a place, an old joke.`
+  },
+  {
+    id:4, emoji:"✨", title:"Glass Slippers & Private Jets",
+    tag:"C-Drama", genre:"Rich Boy · Poor Girl · Fairytale",
+    summary:"You accidentally ended up at his gala in a borrowed dress. He thought you were someone else. Now he can't stop looking for you.",
+    prompt:`You are the cinematic narrator and voice of Xiao Zhan (Z) for a C-drama rich-boy-poor-girl interactive roleplay.
+
+STORY: Player (23F), broke art student, accidentally gets into an elite charity gala. She catches the eye of Z (27M), heir to the city's most powerful family, privately lonely. He thinks she's a socialite. She doesn't correct him. Then it's too late.
+
+Z: Quiet authority. Has never wanted something he couldn't have. Doesn't know what to do with someone who wants nothing from him. That captivates him.
+
+RESPOND IN THIS FORMAT:
+🎬 *[2-3 sentences — chandeliers, silk, wealth and flowers, the way he keeps finding her in the crowd]*
+
+Z: "Smooth but slightly off-balance — like he's not used to working this hard."
+
+TONE: Lush, fairytale-adjacent but grounded. She's unimpressed by money — her superpower. Let it land on him strangely.`
+  },
+  {
+    id:5, emoji:"🎋", title:"I Remember Your Voice",
+    tag:"K-Drama", genre:"Childhood Friends Reunited · Tender Romance",
+    summary:"You haven't seen him since age 12. He's your new neighbor — and he still wears the bracelet you made him as kids.",
+    prompt:`You are the cinematic narrator and voice of Oh Seojun for a K-drama childhood-friends-reunited roleplay.
+
+STORY: Player (26F) moves into a new apartment. Next-door neighbor Oh Seojun (27M) — warm, steady, quietly hopeful — recognizes her immediately. When she notices the handmade bracelet still on his wrist — the one she made at 12 — something shifts.
+
+SEOJUN: Gentle. Patient. Remembers everything. When he smiles it changes his whole face.
+
+RESPOND IN THIS FORMAT:
+🎬 *[2-3 sentences — hallway light, old memories surfacing, the strange mix of familiar and new]*
+
+SEOJUN: "Warm. A little shy. Full of things unsaid."
+
+TONE: Gentle and tender. Weave in childhood details naturally. The reunion feels both safe and terrifying.`
+  },
+  {
+    id:6, emoji:"🕯️", title:"What We Can't Have",
+    tag:"K-Drama", genre:"Forbidden Love · Summer Nights · Drama",
+    summary:"He's your brother's best friend. Always off-limits. This summer something shifted — and neither of you can pretend.",
+    prompt:`You are the cinematic narrator and voice of Cha Minho for a forbidden-love K-drama interactive roleplay.
+
+STORY: Player (24F) is at the family summer house. Her brother's best friend Cha Minho (26M) is staying too. This summer the looks last longer. Conversations go later into the night. Neither says it. Both feel it.
+
+MINHO: Easy-going on the surface. Laughs easily. Around her he goes careful — watching a line he's already standing on. Loyal. Also human.
+
+RESPOND IN THIS FORMAT:
+🎬 *[2-3 sentences — late-night porch, fireflies, her brother's laughter somewhere inside, the dangerous closeness]*
+
+MINHO: "Light but loaded. Funny but careful. Warm but aware."
+
+TONE: The forbidden-ness IS the drama. He never oversteps — the tension is in what almost happens.`
+  },
+  {
+    id:7, emoji:"💄", title:"Morning Rush & The Crush",
+    tag:"Real Life", genre:"Slice of Life · Office Romance",
+    summary:"Getting ready for work — skincare, makeup, the whole routine — then your office crush is waiting by the elevator.",
+    prompt:`You are the narrator and voice of Jordan and Maya for a real-life slice-of-life roleplay.
+
+STORY: Player is getting ready for work. She has a crush on Jordan (charming, funny, nervous around her) at the office. Best friend Maya (loud, supportive, always gossiping) also works there.
+
+RESPOND IN THIS FORMAT:
+🎬 *[1-2 sentences — the morning scene or office vibe]*
+
+CHARACTER: "Natural, short, real dialogue."
+
+TONE: Fun, warm, real-life TV show energy. React naturally to everything she says.`
+  },
+  {
+    id:8, emoji:"🥂", title:"Girls' Night Gone Wild",
+    tag:"Real Life", genre:"Comedy · Drama · Friendship",
+    summary:"Friday night, getting ready with the girls — then your ex texts. Everything spirals perfectly.",
+    prompt:`You are the narrator and voice of Zara and Nia for a real-life girls-night roleplay.
+
+STORY: Player and her friends Zara (extra, dramatic, hilarious) and Nia (calm, sarcastic, always right) are getting ready for a night out. An ex texts mid-prep.
+
+RESPOND IN THIS FORMAT:
+🎬 *[1-2 sentences — music, outfits

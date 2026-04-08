@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live The Story</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: black;
+  color: white;
+  text-align: center;
+}
+
+.container {
+  padding: 40px;
+}
+
+button {
+  padding: 15px 25px;
+  font-size: 18px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 10px;
+  background: purple;
+  color: white;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎬 Live The Story</h1>
+  <p>Choose your story and live it.</p>
+
+  <button onclick="startStory()">Choose Your Story</button>
+
+  <div id="story" class="hidden">
+    <h2>You meet a mysterious stranger...</h2>
+    <button onclick="choice1()">Talk to them</button>
+    <button onclick="choice2()">Walk away</button>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+function startStory() {
+  document.getElementById("story").classList.remove("hidden");
+}
+
+function choice1() {
+  document.getElementById("result").innerHTML =
+    "<p>You start a deep conversation... something magical begins 💜</p>";
+}
+
+function choice2() {
+  document.getElementById("result").innerHTML =
+    "<p>You walk away... but you feel like you missed something important.</p>";
+}
+</script>
+
+</body>
+  </html>
